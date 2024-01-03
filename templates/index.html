@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0">
+    <title>Gemini Chat</title>
+</head>
+<style>
+
+    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+/* :root {
+    --colour-1: #ffffff;
+    --colour-2: #000000;
+    --colour-3: #000000;
+    --colour-4: #000000;
+    --colour-5: #000000;
+    --colour-6: #000000;
+
+    --accent: #ffffff;
+    --blur-bg: #98989866;
+    --blur-border: #00000040;
+    --user-input: #000000;
+    --conversations: #000000;
+} */
+
+:root {
+    --colour-1: #000000;
+    --colour-2: #ccc;
+    --colour-3: #e4d4ff;
+    --colour-4: #f0f0f0;
+    --colour-5: #181818;
+    --colour-6: #242424;
+
+    --accent: #8b3dff;
+    --blur-bg: #16101b66;
+    --blur-border: #84719040;
+    --user-input: #ac87bb;
+    --conversations: #c7a2ff;
+}
+
+:root {
+    --font-1: "Inter", sans-serif;
+    --section-gap: 25px;
+    --border-radius-1: 8px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    position: relative;
+    font-family: var(--font-1);
+}
+
+html,
+body {
+    scroll-behavior: smooth;
+    overflow: hidden;
+}
+
+body {
+    padding: var(--section-gap);
+    background: var(--colour-1);
+    color: var(--colour-3);
+    min-height: 100vh;
+}
+
+.row {
+    display: flex;
+    gap: var(--section-gap);
+    height: 100%;
+}
+
+.box {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background-color: var(--blur-bg);
+    height: 100%;
+    width: 100%;
+    border-radius: var(--border-radius-1);
+    border: 1px solid var(--blur-border);
+}
+
+.conversations {
+    max-width: 260px;
+    padding: var(--section-gap);
+    overflow: auto;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.conversation {
+    width: 100%;
+    min-height: 50%;
+    height: 100vh;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.conversation #messages {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-wrap: break-word;
+    overflow-y: inherit;
+    overflow-x: hidden;
+    padding-bottom: 50px;
+}
+
+.conversation .user-input {
+    max-height: 10vh;
+}
+
+.conversation .user-input input {
+    font-size: 15px;
+    width: 100%;
+    height: 100%;
+    padding: 12px 15px;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--colour-3);
+}
+
+.conversation .user-input input::placeholder {
+    color: var(--user-input)
+}
+
+.gradient:nth-child(1) {
+    --top: 0;
+    --right: 0;
+    --size: 70vw;
+    --blur: calc(0.5 * var(--size));
+    --opacity: 0.3;
+    animation: zoom_gradient 6s infinite;
+}
+
+.gradient {
+    position: absolute;
+    z-index: -1;
+    border-radius: calc(0.5 * var(--size));
+    background-color: var(--accent);
+    background: radial-gradient(circle at center, var(--accent), var(--accent));
+    width: 70vw;
+    height: 70vw;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    filter: blur(calc(0.5 * 70vw)) opacity(var(--opacity));
+}
+
+.conversations {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: auto;
+    min-width: 0;
+}
+
+.conversations .title {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.conversations .convo {
+    padding: 8px 12px;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    user-select: none;
+    justify-content: space-between;
+}
+
+.conversations .convo .left {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: auto;
+    min-width: 0;
+}
+
+.conversations i {
+    color: var(--conversations);
+    cursor: pointer;
+}
+
+.convo-title {
+    color: var(--colour-3);
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.message {
+
+    width: 100%;
+    overflow-wrap: break-word;
+    display: flex;
+    gap: var(--section-gap);
+    padding: var(--section-gap);
+    padding-bottom: 0;
+}
+
+.message:last-child {
+    animation: 0.6s show_message;
+}
+
+@keyframes show_message {
+    from {
+        transform: translateY(10px);
+        opacity: 0;
+    }
+}
+
+.message .user {
+    max-width: 48px;
+    max-height: 48px;
+    flex-shrink: 0;
+}
+
+.message .user img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    outline: 1px solid var(--blur-border);
+}
+
+.message .user:after {
+    content: "63";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    height: 60%;
+    width: 60%;
+    background: var(--colour-3);
+    filter: blur(10px) opacity(0.5);
+    z-index: 10000;
+}
+
+.message .content {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+}
+
+.message .content p,
+.message .content li,
+.message .content code {
+    font-size: 15px;
+    line-height: 1.3;
+}
+
+.message .user i {
+    position: absolute;
+    bottom: -6px;
+    right: -6px;
+    z-index: 1000;
+}
+
+.new_convo {
+    padding: 8px 12px;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    background: transparent;
+    border: 1px dashed var(--conversations);
+    border-radius: var(--border-radius-1);
+}
+
+.new_convo span {
+    color: var(--colour-3);
+    font-size: 14px;
+}
+
+.new_convo:hover {
+    border-style: solid;
+}
+
+.stop_generating {
+    position: absolute;
+    bottom: 118px;
+    /* left: 10px;
+    bottom: 125px;
+    right: 8px; */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000000;
+}
+
+.stop_generating button {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background-color: var(--blur-bg);
+    border-radius: var(--border-radius-1);
+    border: 1px solid var(--blur-border);
+    padding: 10px 15px;
+    color: var(--colour-3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    animation: show_popup 0.4s;
+}
+
+@keyframes show_popup {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+}
+
+@keyframes hide_popup {
+    to {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+}
+
+.stop_generating-hiding button {
+    animation: hide_popup 0.4s;
+}
+
+.stop_generating-hidden button {
+    display: none;
+}
+
+.typing {
+    position: absolute;
+    top: -25px;
+    left: 0;
+    font-size: 14px;
+    animation: show_popup 0.4s;
+}
+
+.typing-hiding {
+    animation: hide_popup 0.4s;
+}
+
+.typing-hidden {
+    display: none;
+}
+
+input[type="checkbox"] {
+    height: 0;
+    width: 0;
+    display: none;
+}
+
+label {
+    cursor: pointer;
+    text-indent: -9999px;
+    width: 50px;
+    height: 30px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background-color: var(--blur-bg);
+    border-radius: var(--border-radius-1);
+    border: 1px solid var(--blur-border);
+    display: block;
+    border-radius: 100px;
+    position: relative;
+    overflow: hidden;
+    transition: 0.33s;
+}
+
+label:after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 5px;
+    width: 20px;
+    height: 20px;
+    background: var(--colour-3);
+    border-radius: 90px;
+    transition: 0.33s;
+}
+
+input:checked+label {
+    background: var(--blur-border);
+}
+
+input:checked+label:after {
+    left: calc(100% - 5px - 20px);
+}
+
+.buttons {
+    min-height: 10vh;
+    display: flex;
+    align-items: start;
+    justify-content: left;
+    width: 100%;
+}
+
+.field {
+    height: fit-content;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-right: 15px
+}
+
+.field .about {
+    font-size: 14px;
+    color: var(--colour-3);
+}
+
+.disable-scrollbars::-webkit-scrollbar {
+  background: transparent; /* Chrome/Safari/Webkit */
+  width: 0px;
+}
+
+.disable-scrollbars {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE 10+ */
+}
+
+select {
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+
+    cursor: pointer;
+    background-color: var(--blur-bg);
+    border: 1px solid var(--blur-border);
+    color: var(--colour-3);
+    display: block;
+    position: relative;
+    overflow: hidden;
+    outline: none;
+    padding: 8px 16px;
+
+    appearance: none;
+}
+
+.input-box {
+    display: flex;
+    align-items: center;
+    padding-right: 15px;
+    cursor: pointer;
+}
+
+
+
+.bottom_buttons {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.bottom_buttons button {
+    padding: 8px 12px;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    background: transparent;
+    border: 1px solid #c7a2ff;
+    border-radius: var(--border-radius-1);
+    width: 100%;
+}
+
+.bottom_buttons button span {
+    color: var(--colour-3);
+    font-size: 14px;
+}
+
+.conversations .top {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow: auto;
+}
+
+#cursor {
+    line-height: 17px;
+    margin-left: 3px;
+    -webkit-animation: blink 0.8s infinite;
+    animation: blink 0.8s infinite;
+    width: 7px;
+    height: 15px;
+}
+
+@keyframes blink {
+    0% {
+        background: #ffffff00;
+    }
+
+    50% {
+        background: white;
+    }
+
+    100% {
+        background: #ffffff00;
+    }
+}
+
+@-webkit-keyframes blink {
+    0% {
+        background: #ffffff00;
+    }
+
+    50% {
+        background: white;
+    }
+
+    100% {
+        background: #ffffff00;
+    }
+}
+
+
+ol,
+ul {
+    padding-left: 20px;
+}
+
+
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spinner:before {
+    content: '';
+    box-sizing: border-box;
+    position: absolute;
+    top: 50%;
+    left: 45%;
+    width: 20px;
+    height: 20px;
+
+    border-radius: 50%;
+    border: 1px solid var(--conversations);
+    border-top-color: white;
+    animation: spinner .6s linear infinite;
+}
+
+.grecaptcha-badge {
+    visibility: hidden;
+}
+
+.mobile-sidebar {
+    display: none !important;
+    position: absolute;
+    z-index: 100000;
+    top: 0;
+    left: 0;
+    margin: 10px;
+    font-size: 20px;
+    cursor: pointer;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background-color: var(--blur-bg);
+    border-radius: 10px;
+    border: 1px solid var(--blur-border);
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+    align-items: center;
+    transition: 0.33s;
+}
+
+.mobile-sidebar i {
+    transition: 0.33s;
+}
+
+.rotated {
+    transform: rotate(360deg);
+}
+
+@media screen and (max-width: 990px) {
+    .conversations {
+        display: none;
+        width: 100%;
+        max-width: none;
+    }
+
+    .buttons {
+    flex-wrap: wrap;
+    gap: 5px;
+    padding-bottom: 10vh;
+    margin-bottom: 10vh;
+}
+
+
+
+    .mobile-sidebar {
+        display: flex !important;
+    }
+}
+
+@media screen and (max-height: 640px) {
+    body {
+        height: 87vh
+    }
+}
+
+
+.shown {
+    display: flex;
+}
+
+
+a:-webkit-any-link {
+    color: var(--accent);
+}
+
+.conversation .user-input textarea {
+    font-size: 15px;
+    width: 100%;
+    height: 100%;
+    padding: 12px 15px;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--colour-3);
+
+    resize: vertical;
+    max-height: 150px;
+    min-height: 80px;
+}
+
+/* style for hljs copy */
+.hljs-copy-wrapper {
+    position: relative;
+    overflow: hidden
+}
+
+.hljs-copy-wrapper:hover .hljs-copy-button,
+.hljs-copy-button:focus {
+    transform: translateX(0)
+}
+
+.hljs-copy-button {
+    position: absolute;
+    transform: translateX(calc(100% + 1.125em));
+    top: 1em;
+    right: 1em;
+    width: 2rem;
+    height: 2rem;
+    text-indent: -9999px;
+    color: #fff;
+    border-radius: .25rem;
+    border: 1px solid #ffffff22;
+    background-color: #2d2b57;
+    background-image: url('data:image/svg+xml;utf-8,<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M6 5C5.73478 5 5.48043 5.10536 5.29289 5.29289C5.10536 5.48043 5 5.73478 5 6V20C5 20.2652 5.10536 20.5196 5.29289 20.7071C5.48043 20.8946 5.73478 21 6 21H18C18.2652 21 18.5196 20.8946 18.7071 20.7071C18.8946 20.5196 19 20.2652 19 20V6C19 5.73478 18.8946 5.48043 18.7071 5.29289C18.5196 5.10536 18.2652 5 18 5H16C15.4477 5 15 4.55228 15 4C15 3.44772 15.4477 3 16 3H18C18.7956 3 19.5587 3.31607 20.1213 3.87868C20.6839 4.44129 21 5.20435 21 6V20C21 20.7957 20.6839 21.5587 20.1213 22.1213C19.5587 22.6839 18.7957 23 18 23H6C5.20435 23 4.44129 22.6839 3.87868 22.1213C3.31607 21.5587 3 20.7957 3 20V6C3 5.20435 3.31607 4.44129 3.87868 3.87868C4.44129 3.31607 5.20435 3 6 3H8C8.55228 3 9 3.44772 9 4C9 4.55228 8.55228 5 8 5H6Z" fill="white"/><path fill-rule="evenodd" clip-rule="evenodd" d="M7 3C7 1.89543 7.89543 1 9 1H15C16.1046 1 17 1.89543 17 3V5C17 6.10457 16.1046 7 15 7H9C7.89543 7 7 6.10457 7 5V3ZM15 3H9V5H15V3Z" fill="white"/></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: background-color 200ms ease, transform 200ms ease-out
+}
+
+.hljs-copy-button:hover {
+    border-color: #ffffff44
+}
+
+.hljs-copy-button:active {
+    border-color: #ffffff66
+}
+
+.hljs-copy-button[data-copied="true"] {
+    text-indent: 0;
+    width: auto;
+    background-image: none
+}
+
+@media(prefers-reduced-motion) {
+    .hljs-copy-button {
+        transition: none
+    }
+}
+
+.hljs-copy-alert {
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px
+}
+
+.visually-hidden {
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+
+.color-picker>fieldset {
+    border: 0;
+    display: flex;
+    width: fit-content;
+    background: var(--colour-1);
+    margin-inline: auto;
+    border-radius: 8px;
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    cursor: pointer;
+    background-color: var(--blur-bg);
+    border: 1px solid var(--blur-border);
+    color: var(--colour-3);
+    display: block;
+    position: relative;
+    overflow: hidden;
+    outline: none;
+    padding: 6px 16px;
+}
+
+.color-picker input[type="radio"]:checked {
+    background-color: var(--radio-color);
+}
+
+.color-picker input[type="radio"]#light {
+    --radio-color: gray;
+}
+
+.color-picker input[type="radio"]#pink {
+    --radio-color: pink;
+}
+
+.color-picker input[type="radio"]#blue {
+    --radio-color: blue;
+}
+
+.color-picker input[type="radio"]#green {
+    --radio-color: green;
+}
+
+.color-picker input[type="radio"]#dark {
+    --radio-color: #232323;
+}
+
+.pink {
+    --colour-1: hsl(310 50% 90%);
+    --clr-card-bg: hsl(310 50% 100%);
+    --colour-3: hsl(310 50% 15%);
+    --conversations: hsl(310 50% 25%);
+}
+
+.blue {
+    --colour-1: hsl(209 50% 90%);
+    --clr-card-bg: hsl(209 50% 100%);
+    --colour-3: hsl(209 50% 15%);
+    --conversations: hsl(209 50% 25%);
+}
+
+.green {
+    --colour-1: hsl(109 50% 90%);
+    --clr-card-bg: hsl(109 50% 100%);
+    --colour-3: hsl(109 50% 15%);
+    --conversations: hsl(109 50% 25%);
+}
+
+.dark {
+    --colour-1: hsl(209 50% 10%);
+    --clr-card-bg: hsl(209 50% 5%);
+    --colour-3: hsl(209 50% 90%);
+    --conversations: hsl(209 50% 80%);
+}
+
+:root:has(#pink:checked) {
+    --colour-1: hsl(310 50% 90%);
+    --clr-card-bg: hsl(310 50% 100%);
+    --colour-3: hsl(310 50% 15%);
+    --conversations: hsl(310 50% 25%);
+}
+
+:root:has(#blue:checked) {
+    --colour-1: hsl(209 50% 90%);
+    --clr-card-bg: hsl(209 50% 100%);
+    --colour-3: hsl(209 50% 15%);
+    --conversations: hsl(209 50% 25%);
+}
+
+:root:has(#green:checked) {
+    --colour-1: hsl(109 50% 90%);
+    --clr-card-bg: hsl(109 50% 100%);
+    --colour-3: hsl(109 50% 15%);
+    --conversations: hsl(109 50% 25%);
+}
+
+:root:has(#dark:checked) {
+    --colour-1: hsl(209 50% 10%);
+    --clr-card-bg: hsl(209 50% 5%);
+    --colour-3: hsl(209 50% 90%);
+    --conversations: hsl(209 50% 80%);
+}
+</style>
+<script>
+    window.FontAwesomeKitConfig={asyncLoading:{enabled:!1},autoA11y:{enabled:!0},baseUrl:"https://ka-f.fontawesome.com",baseUrlKit:"https://kit-pro.fontawesome.com",detectConflictsUntil:null,iconUploads:{},id:96462084,license:"pro",method:"css",minify:{enabled:!0},token:"d0514f1901",v4FontFaceShim:{enabled:!0},v4shim:{enabled:!0},v5FontFaceShim:{enabled:!0},version:"6.1.1"},function(t){"function"==typeof define&&define.amd?define("kit-loader",t):t()}(function(){"use strict";function t(e){return(t="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(t){return typeof t}:function(t){return t&&"function"==typeof Symbol&&t.constructor===Symbol&&t!==Symbol.prototype?"symbol":typeof t})(e)}function e(t,e,n){return e in t?Object.defineProperty(t,e,{value:n,enumerable:!0,configurable:!0,writable:!0}):t[e]=n,t}function n(t,e){var n=Object.keys(t);if(Object.getOwnPropertySymbols){var o=Object.getOwnPropertySymbols(t);e&&(o=o.filter(function(e){return Object.getOwnPropertyDescriptor(t,e).enumerable})),n.push.apply(n,o)}return n}function o(t){for(var o=1;o<arguments.length;o++){var r=null!=arguments[o]?arguments[o]:{};o%2?n(Object(r),!0).forEach(function(n){e(t,n,r[n])}):Object.getOwnPropertyDescriptors?Object.defineProperties(t,Object.getOwnPropertyDescriptors(r)):n(Object(r)).forEach(function(e){Object.defineProperty(t,e,Object.getOwnPropertyDescriptor(r,e))})}return t}function r(t,e){return function(t){if(Array.isArray(t))return t}(t)||function(t,e){if("undefined"!=typeof Symbol&&Symbol.iterator in Object(t)){var n=[],o=!0,r=!1,i=void 0;try{for(var c,a=t[Symbol.iterator]();!(o=(c=a.next()).done)&&(n.push(c.value),!e||n.length!==e);o=!0);}catch(t){r=!0,i=t}finally{try{o||null==a.return||a.return()}finally{if(r)throw i}}return n}}(t,e)||function(t,e){if(t){if("string"==typeof t)return i(t,e);var n=Object.prototype.toString.call(t).slice(8,-1);return"Object"===n&&t.constructor&&(n=t.constructor.name),"Map"===n||"Set"===n?Array.from(t):"Arguments"===n||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)?i(t,e):void 0}}(t,e)||function(){throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}()}function i(t,e){(null==e||e>t.length)&&(e=t.length);for(var n=0,o=new Array(e);n<e;n++)o[n]=t[n];return o}function c(t,e){var n=e&&e.addOn||"",o=e&&e.baseFilename||t.license+n,r=e&&e.minify?".min":"",i=e&&e.fileSuffix||t.method,c=e&&e.subdir||t.method;return t.baseUrl+"/releases/"+("latest"===t.version?"latest":"v".concat(t.version))+"/"+c+"/"+o+r+"."+i}function a(t,e){var n=e||["fa"],o="."+Array.prototype.join.call(n,",."),r=t.querySelectorAll(o);Array.prototype.forEach.call(r,function(e){var n=e.getAttribute("title");e.setAttribute("aria-hidden","true");var o=!e.nextElementSibling||!e.nextElementSibling.classList.contains("sr-only");if(n&&o){var r=t.createElement("span");r.innerHTML=n,r.classList.add("sr-only"),e.parentNode.insertBefore(r,e.nextSibling)}})}var u,f=function(){},s="undefined"!=typeof global&&void 0!==global.process&&"function"==typeof global.process.emit,d="undefined"==typeof setImmediate?setTimeout:setImmediate,l=[];function h(){for(var t=0;t<l.length;t++)l[t][0](l[t][1]);l=[],u=!1}function m(t,e){l.push([t,e]),u||(u=!0,d(h,0))}function p(t){var e=t.owner,n=e._state,o=e._data,r=t[n],i=t.then;if("function"==typeof r){n="fulfilled";try{o=r(o)}catch(t){g(i,t)}}v(i,o)||("fulfilled"===n&&b(i,o),"rejected"===n&&g(i,o))}function v(e,n){var o;try{if(e===n)throw new TypeError("A promises callback cannot return that same promise.");if(n&&("function"==typeof n||"object"===t(n))){var r=n.then;if("function"==typeof r)return r.call(n,function(t){o||(o=!0,n===t?y(e,t):b(e,t))},function(t){o||(o=!0,g(e,t))}),!0}}catch(t){return o||g(e,t),!0}return!1}function b(t,e){t!==e&&v(t,e)||y(t,e)}function y(t,e){"pending"===t._state&&(t._state="settled",t._data=e,m(A,t))}function g(t,e){"pending"===t._state&&(t._state="settled",t._data=e,m(S,t))}function w(t){t._then=t._then.forEach(p)}function A(t){t._state="fulfilled",w(t)}function S(t){t._state="rejected",w(t),!t._handled&&s&&global.process.emit("unhandledRejection",t._data,t)}function O(t){global.process.emit("rejectionHandled",t)}function j(t){if("function"!=typeof t)throw new TypeError("Promise resolver "+t+" is not a function");if(this instanceof j==0)throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");this._then=[],function(t,e){function n(t){g(e,t)}try{t(function(t){b(e,t)},n)}catch(t){n(t)}}(t,this)}j.prototype={constructor:j,_state:"pending",_then:null,_data:void 0,_handled:!1,then:function(t,e){var n={owner:this,then:new this.constructor(f),fulfilled:t,rejected:e};return!e&&!t||this._handled||(this._handled=!0,"rejected"===this._state&&s&&m(O,this)),"fulfilled"===this._state||"rejected"===this._state?m(p,n):this._then.push(n),n.then},catch:function(t){return this.then(null,t)}},j.all=function(t){if(!Array.isArray(t))throw new TypeError("You must pass an array to Promise.all().");return new j(function(e,n){var o=[],r=0;function i(t){return r++,function(n){o[t]=n,--r||e(o)}}for(var c,a=0;a<t.length;a++)(c=t[a])&&"function"==typeof c.then?c.then(i(a),n):o[a]=c;r||e(o)})},j.race=function(t){if(!Array.isArray(t))throw new TypeError("You must pass an array to Promise.race().");return new j(function(e,n){for(var o,r=0;r<t.length;r++)(o=t[r])&&"function"==typeof o.then?o.then(e,n):e(o)})},j.resolve=function(e){return e&&"object"===t(e)&&e.constructor===j?e:new j(function(t){t(e)})},j.reject=function(t){return new j(function(e,n){n(t)})};var F="function"==typeof Promise?Promise:j;function E(t,e){var n=e.fetch,o=e.XMLHttpRequest,r=e.token,i=t;return"URLSearchParams"in window?(i=new URL(t)).searchParams.set("token",r):i=i+"?token="+encodeURIComponent(r),i=i.toString(),new F(function(t,e){if("function"==typeof n)n(i,{mode:"cors",cache:"default"}).then(function(t){if(t.ok)return t.text();throw new Error("")}).then(function(e){t(e)}).catch(e);else if("function"==typeof o){var r=new o;r.addEventListener("loadend",function(){this.responseText?t(this.responseText):e(new Error(""))}),["abort","error","timeout"].map(function(t){r.addEventListener(t,function(){e(new Error(""))})}),r.open("GET",i),r.send()}else e(new Error(""))})}function _(t,e,n){var o=t;return[[/(url\("?)\.\.\/\.\.\/\.\./g,function(t,n){return"".concat(n).concat(e)}],[/(url\("?)\.\.\/webfonts/g,function(t,o){return"".concat(o).concat(e,"/releases/v").concat(n,"/webfonts")}],[/(url\("?)https:\/\/kit-free([^.])*\.fontawesome\.com/g,function(t,n){return"".concat(n).concat(e)}]].forEach(function(t){var e=r(t,2),n=e[0],i=e[1];o=o.replace(n,i)}),o}function C(t,e){var n=arguments.length>2&&void 0!==arguments[2]?arguments[2]:function(){},r=e.document||r,i=a.bind(a,r,["fa","fab","fas","far","fal","fad","fak"]),u=Object.keys(t.iconUploads||{}).length>0;t.autoA11y.enabled&&n(i);var f=[{id:"fa-main",addOn:void 0}];t.v4shim&&t.v4shim.enabled&&f.push({id:"fa-v4-shims",addOn:"-v4-shims"}),t.v5FontFaceShim&&t.v5FontFaceShim.enabled&&f.push({id:"fa-v5-font-face",addOn:"-v5-font-face"}),t.v4FontFaceShim&&t.v4FontFaceShim.enabled&&f.push({id:"fa-v4-font-face",addOn:"-v4-font-face"}),u&&f.push({id:"fa-kit-upload",customCss:!0});var s=f.map(function(n){return new F(function(r,i){E(n.customCss?function(t){return t.baseUrlKit+"/"+t.token+"/"+t.id+"/kit-upload.css"}(t):c(t,{addOn:n.addOn,minify:t.minify.enabled}),e).then(function(i){r(function(t,e){var n=e.contentFilter||function(t,e){return t},o=document.createElement("style"),r=document.createTextNode(n(t,e));return o.appendChild(r),o.media="all",e.id&&o.setAttribute("id",e.id),e&&e.detectingConflicts&&e.detectionIgnoreAttr&&o.setAttributeNode(document.createAttribute(e.detectionIgnoreAttr)),o}(i,o(o({},e),{},{baseUrl:t.baseUrl,version:t.version,id:n.id,contentFilter:function(t,e){return _(t,e.baseUrl,e.version)}})))}).catch(i)})});return F.all(s)}function P(t,e){var n=document.createElement("SCRIPT"),o=document.createTextNode(t);return n.appendChild(o),n.referrerPolicy="strict-origin",e.id&&n.setAttribute("id",e.id),e&&e.detectingConflicts&&e.detectionIgnoreAttr&&n.setAttributeNode(document.createAttribute(e.detectionIgnoreAttr)),n}function U(t){var e,n=[],o=document,r=(o.documentElement.doScroll?/^loaded|^c/:/^loaded|^i|^c/).test(o.readyState);r||o.addEventListener("DOMContentLoaded",e=function(){for(o.removeEventListener("DOMContentLoaded",e),r=1;e=n.shift();)e()}),r?setTimeout(t,0):n.push(t)}try{if(window.FontAwesomeKitConfig){var k=window.FontAwesomeKitConfig,L={detectingConflicts:k.detectConflictsUntil&&new Date<=new Date(k.detectConflictsUntil),detectionIgnoreAttr:"data-fa-detection-ignore",fetch:window.fetch,token:k.token,XMLHttpRequest:window.XMLHttpRequest,document:document},I=document.currentScript,T=I?I.parentElement:document.head;(function(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:{},e=arguments.length>1&&void 0!==arguments[1]?arguments[1]:{};return"js"===t.method?function(t,e){e.autoA11y=t.autoA11y.enabled,"pro"===t.license&&(e.autoFetchSvg=!0,e.fetchSvgFrom=t.baseUrl+"/releases/"+("latest"===t.version?"latest":"v".concat(t.version))+"/svgs",e.fetchUploadedSvgFrom=t.uploadsUrl);var n=[];return t.v4shim.enabled&&n.push(new F(function(n,r){E(c(t,{addOn:"-v4-shims",minify:t.minify.enabled}),e).then(function(t){n(P(t,o(o({},e),{},{id:"fa-v4-shims"})))}).catch(r)})),n.push(new F(function(n,r){E(c(t,{minify:t.minify.enabled}),e).then(function(t){var r=P(t,o(o({},e),{},{id:"fa-main"}));n(function(t,e){var n=e&&void 0!==e.autoFetchSvg?e.autoFetchSvg:void 0,o=e&&void 0!==e.autoA11y?e.autoA11y:void 0;return void 0!==o&&t.setAttribute("data-auto-a11y",o?"true":"false"),n&&(t.setAttributeNode(document.createAttribute("data-auto-fetch-svg")),t.setAttribute("data-fetch-svg-from",e.fetchSvgFrom),t.setAttribute("data-fetch-uploaded-svg-from",e.fetchUploadedSvgFrom)),t}(r,e))}).catch(r)})),F.all(n)}(t,e):"css"===t.method?C(t,e,function(t){U(t),function(t){"undefined"!=typeof MutationObserver&&new MutationObserver(t).observe(document,{childList:!0,subtree:!0})}(t)}):void 0})(k,L).then(function(t){t.map(function(t){try{T.insertBefore(t,I?I.nextSibling:null)}catch(e){T.appendChild(t)}}),L.detectingConflicts&&I&&U(function(){I.setAttributeNode(document.createAttribute(L.detectionIgnoreAttr));var t=function(t,e){var n=document.createElement("script");return e&&e.detectionIgnoreAttr&&n.setAttributeNode(document.createAttribute(e.detectionIgnoreAttr)),n.src=c(t,{baseFilename:"conflict-detection",fileSuffix:"js",subdir:"js",minify:t.minify.enabled}),n}(k,L);document.body.appendChild(t)})}).catch(function(t){console.error("".concat("Font Awesome Kit:"," ").concat(t))})}}catch(t){console.error("".concat("Font Awesome Kit:"," ").concat(t))}});
+
+</script>
+<script>
+    const query = (obj) =>
+  Object.keys(obj)
+    .map((k) => encodeURIComponent(k) + "=" + encodeURIComponent(obj[k]))
+    .join("&");
+const colorThemes = document.querySelectorAll('[name="theme"]');
+const markdown = window.markdownit();
+const message_box = document.getElementById(`messages`);
+const message_input = document.getElementById(`message-input`);
+const box_conversations = document.querySelector(`.top`);
+const spinner = box_conversations.querySelector(".spinner");
+const stop_generating = document.querySelector(`.stop_generating`);
+const send_button = document.querySelector(`#send-button`);
+let prompt_lock = false;
+
+hljs.addPlugin(new CopyButtonPlugin());
+
+function resizeTextarea(textarea) {
+  textarea.style.height = '80px';
+  textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+}
+
+const format = (text) => {
+  return text.replace(/(?:\r\n|\r|\n)/g, "<br>");
+};
+
+message_input.addEventListener("blur", () => {
+  window.scrollTo(0, 0);
+});
+
+message_input.addEventListener("focus", () => {
+  document.documentElement.scrollTop = document.documentElement.scrollHeight;
+});
+
+const delete_conversations = async () => {
+  localStorage.clear();
+  await new_conversation();
+};
+
+const handle_ask = async () => {
+  message_input.style.height = `80px`;
+  message_input.focus();
+
+  window.scrollTo(0, 0);
+  let message = message_input.value;
+
+  if (message.length > 0) {
+    message_input.value = ``;
+    await ask_gpt(message);
+  }
+};
+
+const remove_cancel_button = async () => {
+  stop_generating.classList.add(`stop_generating-hiding`);
+
+  setTimeout(() => {
+    stop_generating.classList.remove(`stop_generating-hiding`);
+    stop_generating.classList.add(`stop_generating-hidden`);
+  }, 300);
+};
+
+const ask_gpt = async (message) => {
+  try {
+    message_input.value = ``;
+    message_input.innerHTML = ``;
+    message_input.innerText = ``;
+
+    add_conversation(window.conversation_id, message.substr(0, 20));
+    window.scrollTo(0, 0);
+    window.controller = new AbortController();
+
+    jailbreak = document.getElementById("jailbreak");
+    model = document.getElementById("model");
+    prompt_lock = true;
+    window.text = ``;
+    window.token = message_id();
+
+    stop_generating.classList.remove(`stop_generating-hidden`);
+
+    message_box.innerHTML += `
+            <div class="message">
+                <div class="user">
+                    ${user_image}
+                    <i class="fa-regular fa-phone-arrow-up-right"></i>
+                </div>
+                <div class="content" id="user_${token}">
+                    ${format(message)}
+                </div>
+            </div>
+        `;
+
+    /* .replace(/(?:\r\n|\r|\n)/g, '<br>') */
+
+    message_box.scrollTop = message_box.scrollHeight;
+    window.scrollTo(0, 0);
+    await new Promise((r) => setTimeout(r, 500));
+    window.scrollTo(0, 0);
+
+    message_box.innerHTML += `
+            <div class="message">
+                <div class="user">
+                    ${gpt_image} <i class="fa-regular fa-phone-arrow-down-left"></i>
+                </div>
+                <div class="content" id="gpt_${window.token}">
+                    <div id="cursor"></div>
+                </div>
+            </div>
+        `;
+
+    message_box.scrollTop = message_box.scrollHeight;
+    window.scrollTo(0, 0);
+    await new Promise((r) => setTimeout(r, 1000));
+    window.scrollTo(0, 0);
+
+    const response = await fetch(`/backend-api/v2/conversation`, {
+      method: `POST`,
+      signal: window.controller.signal,
+      headers: {
+        "content-type": `application/json`,
+        accept: `text/event-stream`,
+      },
+      body: JSON.stringify({
+        conversation_id: window.conversation_id,
+        action: `_ask`,
+        model: model.options[model.selectedIndex].value,
+        jailbreak: jailbreak.options[jailbreak.selectedIndex].value,
+        meta: {
+          id: window.token,
+          content: {
+            conversation: await get_conversation(window.conversation_id),
+            internet_access: document.getElementById("switch").checked,
+            content_type: "text",
+            parts: [
+              {
+                content: message,
+                role: "user",
+              },
+            ],
+          },
+        },
+      }),
+    });
+
+    const reader = response.body.getReader();
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+
+      chunk = new TextDecoder().decode(value);
+
+      if (
+        chunk.includes(
+          `<form id="challenge-form" action="/backend-api/v2/conversation?`
+        )
+      ) {
+        chunk = `cloudflare token expired, please refresh the page.`;
+      }
+
+      text += chunk;
+
+      // const objects         = chunk.match(/({.+?})/g);
+
+      // try { if (JSON.parse(objects[0]).success === false) throw new Error(JSON.parse(objects[0]).error) } catch (e) {}
+
+      // objects.forEach((object) => {
+      //     console.log(object)
+      //     try { text += h2a(JSON.parse(object).content) } catch(t) { console.log(t); throw new Error(t)}
+      // });
+
+      document.getElementById(`gpt_${window.token}`).innerHTML =
+        markdown.render(text);
+      document.querySelectorAll(`code`).forEach((el) => {
+        hljs.highlightElement(el);
+      });
+
+      window.scrollTo(0, 0);
+      message_box.scrollTo({ top: message_box.scrollHeight, behavior: "auto" });
+    }
+
+    // if text contains :
+    if (
+      text.includes(
+        `instead. Maintaining this website and API costs a lot of money`
+      )
+    ) {
+      document.getElementById(`gpt_${window.token}`).innerHTML =
+        "An error occured, please reload / refresh cache and try again.";
+    }
+
+    add_message(window.conversation_id, "user", message);
+    add_message(window.conversation_id, "assistant", text);
+
+    message_box.scrollTop = message_box.scrollHeight;
+    await remove_cancel_button();
+    prompt_lock = false;
+
+    await load_conversations(20, 0);
+    window.scrollTo(0, 0);
+  } catch (e) {
+    add_message(window.conversation_id, "user", message);
+
+    message_box.scrollTop = message_box.scrollHeight;
+    await remove_cancel_button();
+    prompt_lock = false;
+
+    await load_conversations(20, 0);
+
+    console.log(e);
+
+    let cursorDiv = document.getElementById(`cursor`);
+    if (cursorDiv) cursorDiv.parentNode.removeChild(cursorDiv);
+
+    if (e.name != `AbortError`) {
+      let error_message = `oops ! something went wrong, please try again / reload. [stacktrace in console]`;
+
+      document.getElementById(`gpt_${window.token}`).innerHTML = error_message;
+      add_message(window.conversation_id, "assistant", error_message);
+    } else {
+      document.getElementById(`gpt_${window.token}`).innerHTML += ` [aborted]`;
+      add_message(window.conversation_id, "assistant", text + ` [aborted]`);
+    }
+
+    window.scrollTo(0, 0);
+  }
+};
+
+const clear_conversations = async () => {
+  const elements = box_conversations.childNodes;
+  let index = elements.length;
+
+  if (index > 0) {
+    while (index--) {
+      const element = elements[index];
+      if (
+        element.nodeType === Node.ELEMENT_NODE &&
+        element.tagName.toLowerCase() !== `button`
+      ) {
+        box_conversations.removeChild(element);
+      }
+    }
+  }
+};
+
+const clear_conversation = async () => {
+  let messages = message_box.getElementsByTagName(`div`);
+
+  while (messages.length > 0) {
+    message_box.removeChild(messages[0]);
+  }
+};
+
+const show_option = async (conversation_id) => {
+  const conv = document.getElementById(`conv-${conversation_id}`);
+  const yes = document.getElementById(`yes-${conversation_id}`);
+  const not = document.getElementById(`not-${conversation_id}`);
+
+  conv.style.display = "none";
+  yes.style.display = "block";
+  not.style.display = "block";
+}
+
+const hide_option = async (conversation_id) => {
+  const conv = document.getElementById(`conv-${conversation_id}`);
+  const yes = document.getElementById(`yes-${conversation_id}`);
+  const not = document.getElementById(`not-${conversation_id}`);
+
+  conv.style.display = "block";
+  yes.style.display = "none";
+  not.style.display = "none";
+}
+
+const delete_conversation = async (conversation_id) => {
+  localStorage.removeItem(`conversation:${conversation_id}`);
+
+  const conversation = document.getElementById(`convo-${conversation_id}`);
+    conversation.remove();
+
+  if (window.conversation_id == conversation_id) {
+    await new_conversation();
+  }
+
+  await load_conversations(20, 0, true);
+};
+
+const set_conversation = async (conversation_id) => {
+  history.pushState({}, null, `/chat/${conversation_id}`);
+  window.conversation_id = conversation_id;
+
+  await clear_conversation();
+  await load_conversation(conversation_id);
+  await load_conversations(20, 0, true);
+};
+
+const new_conversation = async () => {
+  history.pushState({}, null, `/chat/`);
+  window.conversation_id = uuid();
+
+  await clear_conversation();
+  await load_conversations(20, 0, true);
+};
+
+const load_conversation = async (conversation_id) => {
+  let conversation = await JSON.parse(
+    localStorage.getItem(`conversation:${conversation_id}`)
+  );
+  console.log(conversation, conversation_id);
+
+  for (item of conversation.items) {
+    message_box.innerHTML += `
+            <div class="message">
+                <div class="user">
+                    ${item.role == "assistant" ? gpt_image : user_image}
+                    ${
+                      item.role == "assistant"
+                        ? `<i class="fa-regular fa-phone-arrow-down-left"></i>`
+                        : `<i class="fa-regular fa-phone-arrow-up-right"></i>`
+                    }
+                </div>
+                <div class="content">
+                    ${
+                      item.role == "assistant"
+                        ? markdown.render(item.content)
+                        : item.content
+                    }
+                </div>
+            </div>
+        `;
+  }
+
+  document.querySelectorAll(`code`).forEach((el) => {
+    hljs.highlightElement(el);
+  });
+
+  message_box.scrollTo({ top: message_box.scrollHeight, behavior: "smooth" });
+
+  setTimeout(() => {
+    message_box.scrollTop = message_box.scrollHeight;
+  }, 500);
+};
+
+const get_conversation = async (conversation_id) => {
+  let conversation = await JSON.parse(
+    localStorage.getItem(`conversation:${conversation_id}`)
+  );
+  return conversation.items;
+};
+
+const add_conversation = async (conversation_id, title) => {
+  if (localStorage.getItem(`conversation:${conversation_id}`) == null) {
+    localStorage.setItem(
+      `conversation:${conversation_id}`,
+      JSON.stringify({
+        id: conversation_id,
+        title: title,
+        items: [],
+      })
+    );
+  }
+};
+
+const add_message = async (conversation_id, role, content) => {
+  before_adding = JSON.parse(
+    localStorage.getItem(`conversation:${conversation_id}`)
+  );
+
+  before_adding.items.push({
+    role: role,
+    content: content,
+  });
+
+  localStorage.setItem(
+    `conversation:${conversation_id}`,
+    JSON.stringify(before_adding)
+  ); // update conversation
+};
+
+const load_conversations = async (limit, offset, loader) => {
+  //console.log(loader);
+  //if (loader === undefined) box_conversations.appendChild(spinner);
+
+  let conversations = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    if (localStorage.key(i).startsWith("conversation:")) {
+      let conversation = localStorage.getItem(localStorage.key(i));
+      conversations.push(JSON.parse(conversation));
+    }
+  }
+
+  //if (loader === undefined) spinner.parentNode.removeChild(spinner)
+  await clear_conversations();
+
+  for (conversation of conversations) {
+    box_conversations.innerHTML += `
+    <div class="convo" id="convo-${conversation.id}">
+      <div class="left" onclick="set_conversation('${conversation.id}')">
+          <i class="fa-regular fa-comments"></i>
+          <span class="convo-title">${conversation.title}</span>
+      </div>
+      <i onclick="show_option('${conversation.id}')" class="fa-regular fa-trash" id="conv-${conversation.id}"></i>
+      <i onclick="delete_conversation('${conversation.id}')" class="fa-regular fa-check" id="yes-${conversation.id}" style="display:none;"></i>
+      <i onclick="hide_option('${conversation.id}')" class="fa-regular fa-x" id="not-${conversation.id}" style="display:none;"></i>
+    </div>
+    `;
+  }
+
+  document.querySelectorAll(`code`).forEach((el) => {
+    hljs.highlightElement(el);
+  });
+};
+
+document.getElementById(`cancelButton`).addEventListener(`click`, async () => {
+  window.controller.abort();
+  console.log(`aborted ${window.conversation_id}`);
+});
+
+function h2a(str1) {
+  var hex = str1.toString();
+  var str = "";
+
+  for (var n = 0; n < hex.length; n += 2) {
+    str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+  }
+
+  return str;
+}
+
+const uuid = () => {
+  return `xxxxxxxx-xxxx-4xxx-yxxx-${Date.now().toString(16)}`.replace(
+    /[xy]/g,
+    function (c) {
+      var r = (Math.random() * 16) | 0,
+        v = c == "x" ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    }
+  );
+};
+
+const message_id = () => {
+  random_bytes = (Math.floor(Math.random() * 1338377565) + 2956589730).toString(
+    2
+  );
+  unix = Math.floor(Date.now() / 1000).toString(2);
+
+  return BigInt(`0b${unix}${random_bytes}`).toString();
+};
+
+window.onload = async () => {
+  load_settings_localstorage();
+
+  conversations = 0;
+  for (let i = 0; i < localStorage.length; i++) {
+    if (localStorage.key(i).startsWith("conversation:")) {
+      conversations += 1;
+    }
+  }
+
+  if (conversations == 0) localStorage.clear();
+
+  await setTimeout(() => {
+    load_conversations(20, 0);
+  }, 1);
+
+  if (!window.location.href.endsWith(`#`)) {
+    if (/\/chat\/.+/.test(window.location.href)) {
+      await load_conversation(window.conversation_id);
+    }
+  }
+
+message_input.addEventListener(`keydown`, async (evt) => {
+    if (prompt_lock) return;
+    if (evt.keyCode === 13 && !evt.shiftKey) {
+        evt.preventDefault();
+        console.log('pressed enter');
+        await handle_ask();
+    } else {
+      message_input.style.removeProperty("height");
+      message_input.style.height = message_input.scrollHeight + 4 + "px";
+    }
+  });
+
+  send_button.addEventListener(`click`, async () => {
+    console.log("clicked send");
+    if (prompt_lock) return;
+    await handle_ask();
+  });
+
+  register_settings_localstorage();
+};
+
+document.querySelector(".mobile-sidebar").addEventListener("click", (event) => {
+  const sidebar = document.querySelector(".conversations");
+
+  if (sidebar.classList.contains("shown")) {
+    sidebar.classList.remove("shown");
+    event.target.classList.remove("rotated");
+  } else {
+    sidebar.classList.add("shown");
+    event.target.classList.add("rotated");
+  }
+
+  window.scrollTo(0, 0);
+});
+
+const register_settings_localstorage = async () => {
+  settings_ids = ["switch", "model", "jailbreak"];
+  settings_elements = settings_ids.map((id) => document.getElementById(id));
+  settings_elements.map((element) =>
+    element.addEventListener(`change`, async (event) => {
+      switch (event.target.type) {
+        case "checkbox":
+          localStorage.setItem(event.target.id, event.target.checked);
+          break;
+        case "select-one":
+          localStorage.setItem(event.target.id, event.target.selectedIndex);
+          break;
+        default:
+          console.warn("Unresolved element type");
+      }
+    })
+  );
+};
+
+const load_settings_localstorage = async () => {
+  settings_ids = ["switch", "model", "jailbreak"];
+  settings_elements = settings_ids.map((id) => document.getElementById(id));
+  settings_elements.map((element) => {
+    if (localStorage.getItem(element.id)) {
+      switch (element.type) {
+        case "checkbox":
+          element.checked = localStorage.getItem(element.id) === "true";
+          break;
+        case "select-one":
+          element.selectedIndex = parseInt(localStorage.getItem(element.id));
+          break;
+        default:
+          console.warn("Unresolved element type");
+      }
+    }
+  });
+};
+
+// Theme storage for recurring viewers
+const storeTheme = function (theme) {
+  localStorage.setItem("theme", theme);
+};
+
+// set theme when visitor returns
+const setTheme = function () {
+  const activeTheme = localStorage.getItem("theme");
+  colorThemes.forEach((themeOption) => {
+    if (themeOption.id === activeTheme) {
+      themeOption.checked = true;
+    }
+  });
+  // fallback for no :has() support
+  document.documentElement.className = activeTheme;
+};
+
+colorThemes.forEach((themeOption) => {
+  themeOption.addEventListener("click", () => {
+    storeTheme(themeOption.id);
+    // fallback for no :has() support
+    document.documentElement.className = themeOption.id;
+  });
+});
+
+document.onload = setTheme();
+
+</script>
+<script>
+    const user_image = `<img src="img/user.png" alt="User Avatar">`;
+    const gpt_image = `<img src="img/gpt.png" alt="GPT Avatar">`;
+</script>
+<body>
+<div class="gradient"></div>
+<div class="row">
+    <div class="box conversations">
+        <div class="top">
+            <button class="new_convo" onclick="new_conversation()">
+                <i class="fa-regular fa-plus"></i>
+                <span>New Conversation</span>
+            </button>
+            <div class="spinner"></div>
+        </div>
+        <div class="bottom_buttons">
+            <button onclick="delete_conversations()">
+                <i class="fa-regular fa-trash"></i>
+                <span>Clear Conversations</span>
+            </button>
+
+        </div>
+    </div>
+    <div class="conversation disable-scrollbars">
+        <div class="stop_generating stop_generating-hidden">
+            <button id="cancelButton">
+                <span>Stop Generating</span>
+                <i class="fa-regular fa-stop"></i>
+            </button>
+        </div>
+        <div class="box" id="messages">
+        </div>
+        <div class="user-input">
+            <div class="box input-box">
+                <textarea id="message-input" placeholder="Ask a question" cols="30" rows="10"
+                          style="white-space: pre-wrap;" oninput="resizeTextarea(this)"></textarea>
+                <div id="send-button">
+                    <i class="fa-regular fa-paper-plane-top"></i>
+                </div>
+            </div>
+        </div>
+        <div class="buttons">
+
+
+
+            <form class="color-picker" action="">
+                <fieldset>
+                    <legend class="visually-hidden">Pick a color scheme</legend>
+                    <label for="light" class="visually-hidden">Light</label>
+                    <input type="radio" title="light" name="theme" id="light" checked>
+
+                    <label for="pink" class="visually-hidden">Pink theme</label>
+                    <input type="radio" title="pink" id="pink" name="theme">
+
+                    <label for="blue" class="visually-hidden">Blue theme</label>
+                    <input type="radio" title="blue" id="blue" name="theme">
+
+                    <label for="green" class="visually-hidden">Green theme</label>
+                    <input type="radio" title="green" id="green" name="theme">
+
+                    <label for="dark" class="visually-hidden">Dark theme</label>
+                    <input type="radio" title="dark" id="dark" name="theme">
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="mobile-sidebar">
+    <i class="fa-solid fa-bars"></i>
+</div>
+</body>
+</html>
