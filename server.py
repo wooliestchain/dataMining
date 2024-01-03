@@ -4,7 +4,7 @@ from spyne.server.wsgi import WsgiApplication
 import google.generativeai as genai
 from sql import create_database
 
-genai.configure(api_key="AIzaSyCjdaJ4x7iYR7Sbgi76oLN71qk8DX02pzU")
+genai.configure(api_key="GOOGLE-API-KEY")
 
 
 class HelloWorldService(ServiceBase):

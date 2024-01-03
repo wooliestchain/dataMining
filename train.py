@@ -7,7 +7,7 @@ import json
 
 import google.generativeai as genai
 
-genai.configure(api_key="AIzaSyCjdaJ4x7iYR7Sbgi76oLN71qk8DX02pzU")
+genai.configure(api_key="GOOGLE-API-KEY")
 
 # Set up the model
 generation_config = {
